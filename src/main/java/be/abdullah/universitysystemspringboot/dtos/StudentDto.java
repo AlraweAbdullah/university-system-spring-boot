@@ -10,7 +10,7 @@ public class StudentDto {
     private Long id;
     private String email;
     private String name;
-    private String lastName;
+    private String lastname;
     private String studentNumber;
-    private LocalDate birthDate;
+    private LocalDate birthdate;
 }

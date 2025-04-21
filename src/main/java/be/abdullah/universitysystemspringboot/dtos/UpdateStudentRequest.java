@@ -9,7 +9,7 @@ public class UpdateStudentRequest {
     private String email;
     private String password;
     private String name;
-    private String lastName;
+    private String lastname;
     private String studentNumber;
-    private LocalDate birthDate;
+    private LocalDate birthdate;
 }

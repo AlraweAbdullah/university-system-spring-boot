@@ -25,12 +25,12 @@ public class Student {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "last_name")
-    private String lastName;
+    @Column(name = "lastname")
+    private String lastname;
 
     @Column(name = "student_number")
     private String studentNumber;
 
-    @Column(name = "birth_date")
-    private LocalDate birthDate;
+    @Column(name = "birthdate")
+    private LocalDate birthdate;
 }

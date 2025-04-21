@@ -19,12 +19,12 @@ public class RegisterStudentRequest {
     private String name;
 
     @NotBlank(message = "Lastname can't be empty")
-    private String lastName;
+    private String lastname;
 
     @NotBlank(message = "Student number can't be empty")
     private String studentNumber;
 
     @NotNull(message = "Birthdate can't be empty")
     @Past(message = "Birthdate must be in the past")
-    private LocalDate birthDate;
+    private LocalDate birthdate;
 }
