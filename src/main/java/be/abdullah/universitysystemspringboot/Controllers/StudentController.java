@@ -34,6 +34,15 @@ public class StudentController {
         return ResponseEntity.created(uri).body(studentDto);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<StudentDto> getStudentById(@PathVariable Long id) {
+        var student = studentRepository.findById(id).orElse(null);
+        if (student == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(studentMapper.toDto(student));
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<StudentDto> updateStudent(@PathVariable Long id, @RequestBody UpdateStudentRequest request) {
         var student = studentRepository.findById(id).orElse(null);
