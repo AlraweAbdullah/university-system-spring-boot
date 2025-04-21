@@ -6,13 +6,17 @@ import be.abdullah.universitysystemspringboot.dtos.StudentDto;
 import be.abdullah.universitysystemspringboot.dtos.UpdateStudentRequest;
 import be.abdullah.universitysystemspringboot.mapper.StudentMapper;
 import be.abdullah.universitysystemspringboot.repositories.StudentRepository;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @AllArgsConstructor
@@ -28,7 +32,7 @@ public class StudentController {
     }
 
     @PostMapping
-    public ResponseEntity<StudentDto> registerUser(@RequestBody RegisterStudentRequest request, UriComponentsBuilder builder) {
+    public ResponseEntity<StudentDto> registerUser(@Valid @RequestBody RegisterStudentRequest request, UriComponentsBuilder builder) {
         var student = studentMapper.toEntity(request);
         var studentDto = studentMapper.toDto(studentRepository.save(student));
 
@@ -59,7 +63,7 @@ public class StudentController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteStudent(@PathVariable Long id) {
         var user = studentRepository.findById(id).orElse(null);
-        if (user == null){
+        if (user == null) {
             return ResponseEntity.notFound().build();
         }
         studentRepository.deleteById(id);
@@ -80,5 +84,16 @@ public class StudentController {
         student.setPassword(request.getNewPassword());
         studentRepository.save(student);
         return ResponseEntity.noContent().build();
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleValidationErrors(MethodArgumentNotValidException exception) {
+        var errors = new HashMap<String, String>();
+
+        exception.getBindingResult().getFieldErrors().forEach(error -> {
+            errors.put(error.getField(), error.getDefaultMessage());
+        });
+
+        return ResponseEntity.badRequest().body(errors);
     }
 }
