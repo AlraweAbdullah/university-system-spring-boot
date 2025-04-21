@@ -1,10 +1,8 @@
 package be.abdullah.universitysystemspringboot.dtos;
 
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
-
-import java.time.LocalDate;
 
 @Data
 public class RegisterStudentRequest extends StudentRequest{

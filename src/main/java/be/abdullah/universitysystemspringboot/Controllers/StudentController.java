@@ -31,15 +31,6 @@ public class StudentController {
         return students.stream().map(studentMapper::toDto).toList();
     }
 
-    @PostMapping
-    public ResponseEntity<StudentDto> registerUser(@Valid @RequestBody RegisterStudentRequest request, UriComponentsBuilder builder) {
-        var student = studentMapper.toEntity(request);
-        var studentDto = studentMapper.toDto(studentRepository.save(student));
-
-        var uri = builder.path("/students/{id}").buildAndExpand(student.getId()).toUri();
-        return ResponseEntity.created(uri).body(studentDto);
-    }
-
     @GetMapping("/{id}")
     public ResponseEntity<StudentDto> getStudentById(@PathVariable Long id) {
         var student = studentRepository.findById(id).orElse(null);
@@ -49,11 +40,31 @@ public class StudentController {
         return ResponseEntity.ok(studentMapper.toDto(student));
     }
 
+    @PostMapping
+    public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterStudentRequest request, UriComponentsBuilder builder) {
+        if (studentRepository.existsByEmail(request.getEmail())) {
+            return ResponseEntity.badRequest().body(
+                    Map.of("email", "Email is already registered.")
+            );
+        }
+        var student = studentMapper.toEntity(request);
+        var studentDto = studentMapper.toDto(studentRepository.save(student));
+
+        var uri = builder.path("/students/{id}").buildAndExpand(student.getId()).toUri();
+        return ResponseEntity.created(uri).body(studentDto);
+    }
+
     @PutMapping("/{id}")
-    public ResponseEntity<StudentDto> updateStudent(@PathVariable Long id, @Valid @RequestBody UpdateStudentRequest request) {
+    public ResponseEntity<?> updateStudent(@PathVariable Long id, @Valid @RequestBody UpdateStudentRequest request) {
         var student = studentRepository.findById(id).orElse(null);
         if (student == null) {
             return ResponseEntity.notFound().build();
+        }
+
+        if (studentRepository.existsByEmailAndIdNot(request.getEmail(), student.getId())) {
+            return ResponseEntity.badRequest().body(
+                    Map.of("email", "Email is already registered.")
+            );
         }
         studentMapper.update(request, student);
         studentRepository.save(student);
