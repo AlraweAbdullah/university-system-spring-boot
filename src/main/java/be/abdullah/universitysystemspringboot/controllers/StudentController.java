@@ -1,4 +1,4 @@
-package be.abdullah.universitysystemspringboot.Controllers;
+package be.abdullah.universitysystemspringboot.controllers;
 
 import be.abdullah.universitysystemspringboot.dtos.ChangePasswordRequest;
 import be.abdullah.universitysystemspringboot.dtos.RegisterStudentRequest;
