@@ -6,7 +6,7 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data
-public class StudentRequest {
+public abstract class StudentRequest {
     @NotBlank(message = "Email can't be empty")
     @Email(message = "Email is not valid")
     private String email;
