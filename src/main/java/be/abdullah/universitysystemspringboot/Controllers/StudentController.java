@@ -2,6 +2,7 @@ package be.abdullah.universitysystemspringboot.Controllers;
 
 import be.abdullah.universitysystemspringboot.dtos.RegisterStudentRequest;
 import be.abdullah.universitysystemspringboot.dtos.StudentDto;
+import be.abdullah.universitysystemspringboot.dtos.UpdateStudentRequest;
 import be.abdullah.universitysystemspringboot.mapper.StudentMapper;
 import be.abdullah.universitysystemspringboot.repositories.StudentRepository;
 import lombok.AllArgsConstructor;
@@ -31,6 +32,17 @@ public class StudentController {
 
         var uri = builder.path("/students/{id}").buildAndExpand(student.getId()).toUri();
         return ResponseEntity.created(uri).body(studentDto);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<StudentDto> updateStudent(@PathVariable Long id, @RequestBody UpdateStudentRequest request) {
+        var student = studentRepository.findById(id).orElse(null);
+        if (student == null) {
+            return ResponseEntity.notFound().build();
+        }
+        studentMapper.update(request, student);
+        studentRepository.save(student);
+        return ResponseEntity.ok(studentMapper.toDto(student));
     }
 
 }
