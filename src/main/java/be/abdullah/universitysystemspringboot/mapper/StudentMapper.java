@@ -11,7 +11,7 @@ import org.mapstruct.MappingTarget;
 public interface StudentMapper {
     Student toEntity(RegisterStudentRequest request);
     StudentDto toDto(Student student);
-    // No need for @BeanMapping as PUT expects the full object.
-    // @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE).
+
+
     void update(UpdateStudentRequest request, @MappingTarget Student student);
 }
