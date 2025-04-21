@@ -45,4 +45,13 @@ public class StudentController {
         return ResponseEntity.ok(studentMapper.toDto(student));
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteStudent(@PathVariable Long id) {
+        var user = studentRepository.findById(id).orElse(null);
+        if (user == null){
+            return ResponseEntity.notFound().build();
+        }
+        studentRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
 }
