@@ -1,11 +1,13 @@
 package be.abdullah.universitysystemspringboot.Controllers;
 
+import be.abdullah.universitysystemspringboot.dtos.ChangePasswordRequest;
 import be.abdullah.universitysystemspringboot.dtos.RegisterStudentRequest;
 import be.abdullah.universitysystemspringboot.dtos.StudentDto;
 import be.abdullah.universitysystemspringboot.dtos.UpdateStudentRequest;
 import be.abdullah.universitysystemspringboot.mapper.StudentMapper;
 import be.abdullah.universitysystemspringboot.repositories.StudentRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -61,6 +63,22 @@ public class StudentController {
             return ResponseEntity.notFound().build();
         }
         studentRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("{id}/change-password")
+    public ResponseEntity<Void> changePassword(@PathVariable Long id, @RequestBody ChangePasswordRequest request) {
+        var student = studentRepository.findById(id).orElse(null);
+        if (student == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        if (!student.getPassword().equals(request.getOldPassword())) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        student.setPassword(request.getNewPassword());
+        studentRepository.save(student);
         return ResponseEntity.noContent().build();
     }
 }
