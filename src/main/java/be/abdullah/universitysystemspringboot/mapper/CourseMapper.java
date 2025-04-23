@@ -13,7 +13,6 @@ public interface CourseMapper {
     //Not actually needed
     @Mapping(target = "lecturer", source = "lecturer")
     CourseDto toDto(Course course);
-
     Course toEntity(CourseRequest request);
     @Mapping(target = "lecturer.id", source = "lecturerId")
     void update(CourseRequest request, @MappingTarget Course course);

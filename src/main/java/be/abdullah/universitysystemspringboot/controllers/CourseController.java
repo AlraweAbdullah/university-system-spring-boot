@@ -3,6 +3,7 @@ package be.abdullah.universitysystemspringboot.controllers;
 
 import be.abdullah.universitysystemspringboot.dtos.CourseDto;
 import be.abdullah.universitysystemspringboot.dtos.CourseRequest;
+import be.abdullah.universitysystemspringboot.entities.Course;
 import be.abdullah.universitysystemspringboot.mapper.CourseMapper;
 import be.abdullah.universitysystemspringboot.repositories.CourseRepository;
 import be.abdullah.universitysystemspringboot.repositories.LecturerRepository;
@@ -29,8 +30,17 @@ public class CourseController {
     }
 
     @GetMapping
-    public List<CourseDto> getAllCourses() {
-        return courseRepository.findAll().stream().map(courseMapper::toDto).toList();
+    public ResponseEntity<List<CourseDto>> getAllCourses(@RequestParam(name = "lecturerId", required = false) Long lecturerId) {
+        List<Course>courses;
+        if (lecturerId != null) {
+            courses =  courseRepository.findByLecturerId(lecturerId);
+            if (courses.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+        }else {
+            courses = courseRepository.findAll();
+        }
+        return ResponseEntity.ok(courses.stream().map(courseMapper::toDto).toList());
     }
 
     @GetMapping("/{id}")

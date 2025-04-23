@@ -11,7 +11,5 @@ import org.mapstruct.MappingTarget;
 public interface LecturerMapper {
     Lecturer toEntity(RegisterLecturerRequest request);
     LecturerDto toDto(Lecturer lecturer);
-
-
     void update(UpdateLecturerRequest request, @MappingTarget Lecturer lecturer);
 }
