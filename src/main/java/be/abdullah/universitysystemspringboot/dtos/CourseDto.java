@@ -8,5 +8,5 @@ public class CourseDto {
     private Long id;
     private String name;
     private Integer studyPoints;
-    private LecturerDto lecturerDto;
+    private LecturerDto lecturer;
 }
