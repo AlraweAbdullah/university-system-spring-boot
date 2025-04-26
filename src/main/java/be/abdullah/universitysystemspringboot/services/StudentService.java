@@ -102,7 +102,7 @@ public class StudentService {
     }
 
     @Transactional
-    public void unEnrollStudent(Long studentId, Long courseId) {
+    public void withdrawStudent(Long studentId, Long courseId) {
         var student = studentRepository.findById(studentId).orElseThrow(StudentNotFoundException::new);
         courseRepository.findById(courseId).orElseThrow(CourseNotFoundException::new);
 
