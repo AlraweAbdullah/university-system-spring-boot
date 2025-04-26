@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -33,4 +34,7 @@ public class Student {
 
     @Column(name = "birthdate")
     private LocalDate birthdate;
+
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    Set<StudentCourse> studentCourses;
 }
