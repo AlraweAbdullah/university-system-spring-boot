@@ -1,195 +1,119 @@
 package be.abdullah.universitysystemspringboot.controllers;
 
 import be.abdullah.universitysystemspringboot.dtos.*;
-import be.abdullah.universitysystemspringboot.entities.StudentCourse;
-import be.abdullah.universitysystemspringboot.entities.StudentCourseId;
-import be.abdullah.universitysystemspringboot.mapper.StudentCourseMapper;
-import be.abdullah.universitysystemspringboot.mapper.StudentMapper;
-import be.abdullah.universitysystemspringboot.repositories.CourseRepository;
-import be.abdullah.universitysystemspringboot.repositories.StudentRepository;
+import be.abdullah.universitysystemspringboot.exceptions.*;
+import be.abdullah.universitysystemspringboot.services.StudentService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @RestController
 @AllArgsConstructor
 @RequestMapping("/students")
 public class StudentController {
-    private final StudentMapper studentMapper;
-    private final StudentCourseMapper studentCourseMapper;
-    private final CourseRepository courseRepository;
-    private StudentRepository studentRepository;
+    private final StudentService studentService;
 
     @GetMapping
     public List<StudentDto> getAllStudents() {
-        var students = studentRepository.findAll();
-        return students.stream().map(studentMapper::toDto).toList();
+        return studentService.getAllStudents();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<StudentDto> getStudentById(@PathVariable Long id) {
-        var student = studentRepository.findById(id).orElse(null);
-        if (student == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(studentMapper.toDto(student));
+    public StudentDto getStudent(@PathVariable Long id) {
+        return studentService.getStudent(id);
     }
 
     @PostMapping
-    public ResponseEntity<?> registerStudent(@Valid @RequestBody RegisterStudentRequest request, UriComponentsBuilder builder) {
-        if (studentRepository.existsByEmail(request.getEmail())) {
-            return ResponseEntity.badRequest().body(
-                    Map.of("email", "Email is already registered.")
-            );
-        }
-        var student = studentMapper.toEntity(request);
-        var studentDto = studentMapper.toDto(studentRepository.save(student));
-
-        var uri = builder.path("/students/{id}").buildAndExpand(student.getId()).toUri();
+    public ResponseEntity<StudentDto> registerStudent(@Valid @RequestBody RegisterStudentRequest request, UriComponentsBuilder builder) {
+        var studentDto = studentService.registerStudent(request);
+        var uri = builder.path("/students/{id}").buildAndExpand(studentDto.getId()).toUri();
         return ResponseEntity.created(uri).body(studentDto);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateStudent(@PathVariable Long id, @Valid @RequestBody UpdateStudentRequest request) {
-        var student = studentRepository.findById(id).orElse(null);
-        if (student == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        if (studentRepository.existsByEmailAndIdNot(request.getEmail(), student.getId())) {
-            return ResponseEntity.badRequest().body(
-                    Map.of("email", "Email is already registered.")
-            );
-        }
-        studentMapper.update(request, student);
-        studentRepository.save(student);
-        return ResponseEntity.ok(studentMapper.toDto(student));
+    public StudentDto updateStudent(@PathVariable Long id, @Valid @RequestBody UpdateStudentRequest request) {
+        return studentService.updateStudent(id, request);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteStudent(@PathVariable Long id) {
-        var student = studentRepository.findById(id).orElse(null);
-        if (student == null) {
-            return ResponseEntity.notFound().build();
-        }
-        studentRepository.deleteById(id);
+        studentService.deleteStudent(id);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("{id}/change-password")
     public ResponseEntity<Void> changePassword(@PathVariable Long id, @Valid @RequestBody ChangePasswordRequest request) {
-        var student = studentRepository.findById(id).orElse(null);
-        if (student == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        if (!student.getPassword().equals(request.getOldPassword())) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
-
-        student.setPassword(request.getNewPassword());
-        studentRepository.save(student);
+        studentService.changePassword(id, request);
         return ResponseEntity.noContent().build();
     }
 
     @Transactional
     @GetMapping("/{id}/courses")
-    public ResponseEntity<Set<StudentCourseDto>> getStudentCourses(@PathVariable Long id) {
-        var student = studentRepository.findById(id).orElse(null);
-        if (student == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-
-        var dtos = student.getStudentCourses().stream()
-                .map(studentCourseMapper::toDto)
-                .collect(Collectors.toSet());
-
-        return ResponseEntity.ok(dtos);
+    public List<StudentCourseDto> getStudentCourses(@PathVariable Long id) {
+        return studentService.getStudentCourses(id);
     }
 
-    @Transactional
+
     @PostMapping("{id}/courses")
-    public ResponseEntity<?> addCourseToStudent(@PathVariable Long id, @Valid @RequestBody AddCourseToStudentRequest request, UriComponentsBuilder builder){
-        var student = studentRepository.findById(id).orElse(null);
-        if (student == null) {
-            return ResponseEntity.notFound().build();
-        }
-        var course = courseRepository.findById(request.getCourseId()).orElse(null);
-        if (course == null) {
-            return ResponseEntity.badRequest().body(
-                    Map.of("course", "Course not found.")
-            );
-        }
-        var exitedCourse = student.getStudentCourses().stream()
-                .filter(sc -> sc.getCourse().getId().equals(request.getCourseId()))
-                .findFirst()
-                .orElse(null);
-
-
-        if (exitedCourse != null) {
-            return ResponseEntity.badRequest().body(
-                    Map.of(
-                            "course", "Student is already enrolled in " + course.getName()
-                    )
-            );
-        }
-
-        //TODO Needs an appropriate MapStruct mapper
-        var studentCourse = new StudentCourse();
-        studentCourse.setId(new StudentCourseId(student.getId(), course.getId()));
-        studentCourse.setStudent(student);
-        studentCourse.setCourse(course);
-        studentCourse.setCreatedAt(LocalDateTime.now());
-
-        student.getStudentCourses().add(studentCourse);
-        studentRepository.save(student);
-
-        var uri = builder.path("/students/{id}/courses/"+request.getCourseId()).buildAndExpand(student.getId()).toUri();
-        return ResponseEntity.created(uri).body(studentCourseMapper.toDto(studentCourse));
+    public ResponseEntity<StudentCourseDto> enrollStudent(@PathVariable Long id, @Valid @RequestBody AddCourseToStudentRequest request, UriComponentsBuilder builder) {
+        var studentCourseDto = studentService.enrollStudent(id, request);
+        var uri = builder.path("/students/{id}/courses/" + request.getCourseId()).buildAndExpand(studentCourseDto.getCourse().getId()).toUri();
+        return ResponseEntity.created(uri).body(studentCourseDto);
     }
 
     @Transactional
     @DeleteMapping("/{studentId}/courses/{courseId}")
-    public ResponseEntity<?> removeCourseFromStudent(@PathVariable Long studentId, @PathVariable Long courseId) {
-        var student = studentRepository.findById(studentId).orElse(null);
-        if (student == null) {
-            return ResponseEntity.notFound().build();
-        }
-        var course = courseRepository.findById(courseId).orElse(null);
-        if (course == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        var studentCourse = student.getStudentCourses().stream()
-                .filter(sc -> sc.getCourse().getId().equals(courseId))
-                .findFirst()
-                .orElse(null);
-
-        if (studentCourse == null) {
-            return ResponseEntity.badRequest().body(
-                    Map.of(
-                            "course", "Student is not enrolled in " + course.getName()
-                    )
-            );
-        }
-
-
-        student.getStudentCourses().remove(studentCourse);
-
-        studentRepository.save(student);
+    public ResponseEntity<Void> removeCourseFromStudent(@PathVariable Long studentId, @PathVariable Long courseId) {
+        studentService.unEnrollStudent(studentId, courseId);
         return ResponseEntity.noContent().build();
     }
+
+    @ExceptionHandler(StudentNoFoundException.class)
+    public ResponseEntity<Map<String, String>> handleStudentNotFound() {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Student not found"));
+    }
+
+    @ExceptionHandler(DuplicateStudentException.class)
+    public ResponseEntity<Map<String, String>> handleDuplicatedStudent() {
+        return ResponseEntity.badRequest().body(
+                Map.of("error", "Email is already registered.")
+        );
+    }
+
+    @ExceptionHandler(CourseNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleCourseNotFound() {
+        return ResponseEntity.badRequest().body(
+                Map.of("error", "Course not found.")
+        );
+    }
+
+    @ExceptionHandler(DuplicateEnrolledCourseException.class)
+    public ResponseEntity<Map<String, String>> handleDuplicateEnrolledCourse() {
+        return ResponseEntity.badRequest().body(
+                Map.of("error", "Student already enrolled in this course.")
+        );
+    }
+
+    @ExceptionHandler(StudentNotEnrolledException.class)
+    public ResponseEntity<Map<String, String>> handleStudentNotEnrolled() {
+        return ResponseEntity.badRequest().body(
+                Map.of("error", "Student not enrolled in this course.")
+        );
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Void> handleAccessDenied() {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
 
 
 }
