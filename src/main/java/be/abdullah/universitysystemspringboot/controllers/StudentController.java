@@ -3,7 +3,6 @@ package be.abdullah.universitysystemspringboot.controllers;
 import be.abdullah.universitysystemspringboot.dtos.*;
 import be.abdullah.universitysystemspringboot.exceptions.*;
 import be.abdullah.universitysystemspringboot.services.StudentService;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -49,34 +48,40 @@ public class StudentController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("{id}/change-password")
+    @PostMapping("/{id}/change-password")
     public ResponseEntity<Void> changePassword(@PathVariable Long id, @Valid @RequestBody ChangePasswordRequest request) {
         studentService.changePassword(id, request);
         return ResponseEntity.noContent().build();
     }
 
-    @Transactional
     @GetMapping("/{id}/courses")
     public List<StudentCourseDto> getStudentCourses(@PathVariable Long id) {
         return studentService.getStudentCourses(id);
     }
 
 
+    @GetMapping("/{id}/courses/{courseId}")
+    public StudentCourseDto getStudentCourse(@PathVariable Long id, @PathVariable Long courseId) {
+        return studentService.getStudentCourse(id, courseId);
+    }
+
+
     @PostMapping("{id}/courses")
     public ResponseEntity<StudentCourseDto> enrollStudent(@PathVariable Long id, @Valid @RequestBody AddCourseToStudentRequest request, UriComponentsBuilder builder) {
         var studentCourseDto = studentService.enrollStudent(id, request);
-        var uri = builder.path("/students/{id}/courses/" + request.getCourseId()).buildAndExpand(studentCourseDto.getCourse().getId()).toUri();
+        var uri = builder.path("/students/{id}/courses/{courseId}")
+                .buildAndExpand(id, studentCourseDto.getCourse().getId())
+                .toUri();
         return ResponseEntity.created(uri).body(studentCourseDto);
     }
 
-    @Transactional
     @DeleteMapping("/{studentId}/courses/{courseId}")
     public ResponseEntity<Void> removeCourseFromStudent(@PathVariable Long studentId, @PathVariable Long courseId) {
         studentService.unEnrollStudent(studentId, courseId);
         return ResponseEntity.noContent().build();
     }
 
-    @ExceptionHandler(StudentNoFoundException.class)
+    @ExceptionHandler(StudentNotFoundException.class)
     public ResponseEntity<Map<String, String>> handleStudentNotFound() {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Student not found"));
     }
@@ -113,7 +118,4 @@ public class StudentController {
     public ResponseEntity<Void> handleAccessDenied() {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
-
-
-
 }
