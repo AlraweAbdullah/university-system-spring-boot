@@ -5,9 +5,11 @@ import be.abdullah.universitysystemspringboot.dtos.ChangePasswordRequest;
 import be.abdullah.universitysystemspringboot.dtos.LecturerDto;
 import be.abdullah.universitysystemspringboot.dtos.RegisterLecturerRequest;
 import be.abdullah.universitysystemspringboot.dtos.UpdateLecturerRequest;
+import be.abdullah.universitysystemspringboot.entities.Credential;
 import be.abdullah.universitysystemspringboot.exceptions.DuplicateLecturerException;
 import be.abdullah.universitysystemspringboot.exceptions.LecturerNotFoundException;
 import be.abdullah.universitysystemspringboot.mapper.LecturerMapper;
+import be.abdullah.universitysystemspringboot.repositories.CredentialRepository;
 import be.abdullah.universitysystemspringboot.repositories.LecturerRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
@@ -20,6 +22,7 @@ import java.util.List;
 public class LecturerService {
     private final LecturerRepository lecturerRepository;
     private final LecturerMapper lecturerMapper;
+    private final CredentialRepository credentialRepository;
 
 
     public List<LecturerDto> getAllLecturers() {
@@ -34,7 +37,7 @@ public class LecturerService {
     }
 
     public LecturerDto registerLecturer(RegisterLecturerRequest request) {
-        if (lecturerRepository.existsByEmail(request.getEmail())) {
+        if (credentialRepository.existsByEmail(request.getEmail())) {
             throw new DuplicateLecturerException();
         }
 
@@ -44,8 +47,10 @@ public class LecturerService {
 
     public LecturerDto updateLecturer(Long id, UpdateLecturerRequest request) {
         var lecturer =  lecturerRepository.findById(id).orElseThrow(LecturerNotFoundException::new);
-        if (lecturerRepository.existsByEmailAndIdNot(request.getEmail(), id)) {
-            throw new DuplicateLecturerException();
+        for(var credential : credentialRepository.findByEmail(request.getEmail())) {
+            if(!credential.getId().equals(id)){
+                throw new DuplicateLecturerException();
+            }
         }
 
         lecturerMapper.update(request, lecturer);
@@ -59,10 +64,10 @@ public class LecturerService {
 
     public void changePassword(Long id, ChangePasswordRequest request) {
         var lecturer = lecturerRepository.findById(id).orElseThrow(LecturerNotFoundException::new);
-        if (!lecturer.getPassword().equals(request.getOldPassword())) {
+        if (!lecturer.getCredential().getPassword().equals(request.getOldPassword())) {
             throw new AccessDeniedException("Password does not match");
         }
-        lecturer.setPassword(request.getNewPassword());
+        lecturer.getCredential().setPassword(request.getNewPassword());
         lecturerRepository.save(lecturer);
     }
 

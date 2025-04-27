@@ -14,15 +14,13 @@ public class Lecturer {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "email")
-    private String email;
-
-    @Column(name = "password")
-    private String password;
-
     @Column(name = "name")
     private String name;
 
     @Column(name = "lastname")
     private String lastname;
+
+    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+    @JoinColumn(name = "credential_id")
+    private Credential credential;
 }

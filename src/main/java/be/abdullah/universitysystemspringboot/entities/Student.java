@@ -17,12 +17,6 @@ public class Student {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "email")
-    private String email;
-
-    @Column(name = "password")
-    private String password;
-
     @Column(name = "name")
     private String name;
 
@@ -37,4 +31,8 @@ public class Student {
 
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
     List<StudentCourse> studentCourses;
+
+    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+    @JoinColumn(name = "credential_id")
+    private Credential credential;
 }

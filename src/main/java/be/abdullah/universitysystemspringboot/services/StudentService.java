@@ -7,6 +7,7 @@ import be.abdullah.universitysystemspringboot.exceptions.*;
 import be.abdullah.universitysystemspringboot.mapper.StudentCourseMapper;
 import be.abdullah.universitysystemspringboot.mapper.StudentMapper;
 import be.abdullah.universitysystemspringboot.repositories.CourseRepository;
+import be.abdullah.universitysystemspringboot.repositories.CredentialRepository;
 import be.abdullah.universitysystemspringboot.repositories.StudentRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -26,6 +27,7 @@ public class StudentService {
     private final StudentMapper studentMapper;
     private final StudentCourseMapper studentCourseMapper;
     private final CourseRepository courseRepository;
+    private final CredentialRepository credentialRepository;
 
 
     public List<StudentDto> getAllStudents() {
@@ -38,7 +40,7 @@ public class StudentService {
     }
 
     public StudentDto registerStudent(RegisterStudentRequest request) {
-        if (studentRepository.existsByEmail(request.getEmail())) {
+        if (credentialRepository.existsByEmail(request.getEmail())) {
             throw new DuplicateStudentException();
         }
         var student = studentMapper.toEntity(request);
@@ -48,8 +50,11 @@ public class StudentService {
     public StudentDto updateStudent(@PathVariable Long id, @Valid @RequestBody UpdateStudentRequest request) {
         var student = studentRepository.findById(id).orElseThrow(StudentNotFoundException::new);
 
-        if (studentRepository.existsByEmailAndIdNot(request.getEmail(), student.getId())) {
-            throw new DuplicateStudentException();
+
+        for (var  credential : credentialRepository.findByEmail(request.getEmail())) {
+            if (!credential.getId().equals(student.getId())) {
+                throw new DuplicateStudentException();
+            }
         }
 
         studentMapper.update(request, student);
@@ -61,14 +66,13 @@ public class StudentService {
         studentRepository.findById(id).orElseThrow(StudentNotFoundException::new);
         studentRepository.deleteById(id);
     }
-
-    @Transactional
+    
     public void changePassword(Long id, ChangePasswordRequest request) {
         var student = studentRepository.findById(id).orElseThrow(StudentNotFoundException::new);
-        if (!student.getPassword().equals(request.getOldPassword())) {
+        if (!student.getCredential().getPassword().equals(request.getOldPassword())) {
             throw new AccessDeniedException("Password does not match");
         }
-        student.setPassword(request.getNewPassword());
+        student.getCredential().setPassword(request.getNewPassword());
         studentRepository.save(student);
     }
 
