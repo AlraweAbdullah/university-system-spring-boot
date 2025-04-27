@@ -88,6 +88,7 @@ public class LecturerController {
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Void> handleAccessDenied() {
+        System.out.println("ee");
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 }

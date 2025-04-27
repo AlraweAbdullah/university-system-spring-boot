@@ -11,7 +11,6 @@ import be.abdullah.universitysystemspringboot.mapper.LecturerMapper;
 import be.abdullah.universitysystemspringboot.repositories.CredentialRepository;
 import be.abdullah.universitysystemspringboot.repositories.LecturerRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +23,7 @@ public class LecturerService {
     private final LecturerMapper lecturerMapper;
     private final CredentialRepository credentialRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CredintialService credintialService;
 
 
     public List<LecturerDto> getAllLecturers() {
@@ -65,12 +65,7 @@ public class LecturerService {
     }
 
     public void changePassword(Long id, ChangePasswordRequest request) {
-        var lecturer = lecturerRepository.findById(id).orElseThrow(LecturerNotFoundException::new);
-        if (!lecturer.getCredential().getPassword().equals(request.getOldPassword())) {
-            throw new AccessDeniedException("Password does not match");
-        }
-        lecturer.getCredential().setPassword(passwordEncoder.encode(request.getNewPassword()));
-        lecturerRepository.save(lecturer);
+        credintialService.changePassword(id, request, "lecturer");
     }
 
 }
