@@ -13,6 +13,7 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,6 +29,7 @@ public class StudentService {
     private final StudentCourseMapper studentCourseMapper;
     private final CourseRepository courseRepository;
     private final CredentialRepository credentialRepository;
+    private final PasswordEncoder passwordEncoder;
 
 
     public List<StudentDto> getAllStudents() {
@@ -44,6 +46,7 @@ public class StudentService {
             throw new DuplicateStudentException();
         }
         var student = studentMapper.toEntity(request);
+        student.getCredential().setPassword(passwordEncoder.encode(request.getPassword()));
         return studentMapper.toDto(studentRepository.save(student));
     }
 
@@ -66,13 +69,13 @@ public class StudentService {
         studentRepository.findById(id).orElseThrow(StudentNotFoundException::new);
         studentRepository.deleteById(id);
     }
-    
+
     public void changePassword(Long id, ChangePasswordRequest request) {
         var student = studentRepository.findById(id).orElseThrow(StudentNotFoundException::new);
         if (!student.getCredential().getPassword().equals(request.getOldPassword())) {
             throw new AccessDeniedException("Password does not match");
         }
-        student.getCredential().setPassword(request.getNewPassword());
+        student.getCredential().setPassword(passwordEncoder.encode(request.getNewPassword()));
         studentRepository.save(student);
     }
 

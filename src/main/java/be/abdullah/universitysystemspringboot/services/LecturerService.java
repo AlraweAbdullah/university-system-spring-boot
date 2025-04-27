@@ -5,7 +5,6 @@ import be.abdullah.universitysystemspringboot.dtos.ChangePasswordRequest;
 import be.abdullah.universitysystemspringboot.dtos.LecturerDto;
 import be.abdullah.universitysystemspringboot.dtos.RegisterLecturerRequest;
 import be.abdullah.universitysystemspringboot.dtos.UpdateLecturerRequest;
-import be.abdullah.universitysystemspringboot.entities.Credential;
 import be.abdullah.universitysystemspringboot.exceptions.DuplicateLecturerException;
 import be.abdullah.universitysystemspringboot.exceptions.LecturerNotFoundException;
 import be.abdullah.universitysystemspringboot.mapper.LecturerMapper;
@@ -13,6 +12,7 @@ import be.abdullah.universitysystemspringboot.repositories.CredentialRepository;
 import be.abdullah.universitysystemspringboot.repositories.LecturerRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,6 +23,7 @@ public class LecturerService {
     private final LecturerRepository lecturerRepository;
     private final LecturerMapper lecturerMapper;
     private final CredentialRepository credentialRepository;
+    private final PasswordEncoder passwordEncoder;
 
 
     public List<LecturerDto> getAllLecturers() {
@@ -42,6 +43,7 @@ public class LecturerService {
         }
 
         var lecturer = lecturerMapper.toEntity(request);
+        lecturer.getCredential().setPassword(passwordEncoder.encode(lecturer.getCredential().getPassword()));
         return lecturerMapper.toDto(lecturerRepository.save(lecturer));
     }
 
@@ -67,7 +69,7 @@ public class LecturerService {
         if (!lecturer.getCredential().getPassword().equals(request.getOldPassword())) {
             throw new AccessDeniedException("Password does not match");
         }
-        lecturer.getCredential().setPassword(request.getNewPassword());
+        lecturer.getCredential().setPassword(passwordEncoder.encode(request.getNewPassword()));
         lecturerRepository.save(lecturer);
     }
 
