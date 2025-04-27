@@ -1,6 +1,7 @@
 package be.abdullah.universitysystemspringboot.services;
 
 import be.abdullah.universitysystemspringboot.dtos.ChangePasswordRequest;
+import be.abdullah.universitysystemspringboot.dtos.LoginRequest;
 import be.abdullah.universitysystemspringboot.entities.Credential;
 import be.abdullah.universitysystemspringboot.exceptions.LecturerNotFoundException;
 import be.abdullah.universitysystemspringboot.exceptions.StudentNotFoundException;
@@ -43,5 +44,14 @@ public class CredintialService {
         credentialRepository.save(credential);
     }
 
+    public void logIn(LoginRequest request) {
+        var credintial = credentialRepository.findByEmail(request.getEmail()).orElse(null);
+        if(credintial == null) {
+            throw new AccessDeniedException("Email is not registered");
+        }
+        if(!passwordEncoder.matches(request.getPassword(), credintial.getPassword())) {
+            throw new AccessDeniedException("Password does not match");
+        }
+    }
 }
 

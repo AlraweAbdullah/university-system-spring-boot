@@ -20,7 +20,7 @@ public class Lecturer {
     @Column(name = "lastname")
     private String lastname;
 
-    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.REMOVE, CascadeType.MERGE})
     @JoinColumn(name = "credential_id")
     private Credential credential;
 }
