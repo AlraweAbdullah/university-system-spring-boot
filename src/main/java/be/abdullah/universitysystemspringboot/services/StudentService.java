@@ -54,11 +54,10 @@ public class StudentService {
         var student = studentRepository.findById(id).orElseThrow(StudentNotFoundException::new);
 
 
-        for (var  credential : credentialRepository.findByEmail(request.getEmail())) {
-            if (!credential.getId().equals(student.getId())) {
+        var  credential = credentialRepository.findByEmail(request.getEmail()).orElse(null);
+            if (credential != null && !credential.getId().equals(student.getId())) {
                 throw new DuplicateStudentException();
             }
-        }
 
         studentMapper.update(request, student);
         studentRepository.save(student);

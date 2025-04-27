@@ -49,10 +49,10 @@ public class LecturerService {
 
     public LecturerDto updateLecturer(Long id, UpdateLecturerRequest request) {
         var lecturer =  lecturerRepository.findById(id).orElseThrow(LecturerNotFoundException::new);
-        for(var credential : credentialRepository.findByEmail(request.getEmail())) {
-            if(!credential.getId().equals(id)){
+        var credential = credentialRepository.findByEmail(request.getEmail()).orElse(null);
+
+        if(credential != null && !credential.getId().equals(id)){
                 throw new DuplicateLecturerException();
-            }
         }
 
         lecturerMapper.update(request, lecturer);
