@@ -18,5 +18,6 @@ public interface StudentMapper {
     StudentDto toDto(Student student);
 
 
+    @Mapping(target = "credential.email", source = "email")
     void update(UpdateStudentRequest request, @MappingTarget Student student);
 }

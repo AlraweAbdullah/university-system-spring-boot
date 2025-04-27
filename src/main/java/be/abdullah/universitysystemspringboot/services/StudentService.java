@@ -55,11 +55,12 @@ public class StudentService {
 
 
         var  credential = credentialRepository.findByEmail(request.getEmail()).orElse(null);
-            if (credential != null && !credential.getId().equals(student.getId())) {
+            if (credential != null && !credential.getId().equals(student.getCredential().getId())) {
                 throw new DuplicateStudentException();
             }
 
         studentMapper.update(request, student);
+        System.out.println(student.getCredential().getEmail());
         studentRepository.save(student);
         return studentMapper.toDto(student);
     }

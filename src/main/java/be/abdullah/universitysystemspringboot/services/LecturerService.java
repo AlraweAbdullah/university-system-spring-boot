@@ -51,7 +51,7 @@ public class LecturerService {
         var lecturer =  lecturerRepository.findById(id).orElseThrow(LecturerNotFoundException::new);
         var credential = credentialRepository.findByEmail(request.getEmail()).orElse(null);
 
-        if(credential != null && !credential.getId().equals(id)){
+        if(credential != null && !credential.getId().equals(lecturer.getCredential().getId())){
                 throw new DuplicateLecturerException();
         }
 
