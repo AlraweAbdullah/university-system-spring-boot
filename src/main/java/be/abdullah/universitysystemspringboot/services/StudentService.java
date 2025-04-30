@@ -12,6 +12,7 @@ import be.abdullah.universitysystemspringboot.repositories.StudentRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -71,7 +72,16 @@ public class StudentService {
     }
 
     public void changePassword(Long id, ChangePasswordRequest request) {
-        credintialService.changePassword(id, request, "student");
+        var lecturer = studentRepository.findById(id).orElseThrow(StudentNotFoundException::new);
+
+        var credential = lecturer.getCredential();
+
+        if (!passwordEncoder.matches(request.getOldPassword(), credential.getPassword())) {
+            throw new AccessDeniedException("Password does not match");
+        }
+        credential.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        studentRepository.save(lecturer);
+
     }
 
     @Transactional

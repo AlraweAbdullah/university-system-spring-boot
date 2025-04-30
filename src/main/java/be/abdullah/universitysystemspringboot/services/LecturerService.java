@@ -11,6 +11,7 @@ import be.abdullah.universitysystemspringboot.mapper.LecturerMapper;
 import be.abdullah.universitysystemspringboot.repositories.CredentialRepository;
 import be.abdullah.universitysystemspringboot.repositories.LecturerRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +24,6 @@ public class LecturerService {
     private final LecturerMapper lecturerMapper;
     private final CredentialRepository credentialRepository;
     private final PasswordEncoder passwordEncoder;
-    private final CredintialService credintialService;
 
 
     public List<LecturerDto> getAllLecturers() {
@@ -48,11 +48,11 @@ public class LecturerService {
     }
 
     public LecturerDto updateLecturer(Long id, UpdateLecturerRequest request) {
-        var lecturer =  lecturerRepository.findById(id).orElseThrow(LecturerNotFoundException::new);
+        var lecturer = lecturerRepository.findById(id).orElseThrow(LecturerNotFoundException::new);
         var credential = credentialRepository.findByEmail(request.getEmail()).orElse(null);
 
-        if(credential != null && !credential.getId().equals(lecturer.getCredential().getId())){
-                throw new DuplicateLecturerException();
+        if (credential != null && !credential.getId().equals(lecturer.getCredential().getId())) {
+            throw new DuplicateLecturerException();
         }
 
         lecturerMapper.update(request, lecturer);
@@ -65,7 +65,16 @@ public class LecturerService {
     }
 
     public void changePassword(Long id, ChangePasswordRequest request) {
-        credintialService.changePassword(id, request, "lecturer");
+        var lecturer = lecturerRepository.findById(id).orElseThrow(LecturerNotFoundException::new);
+
+        var credential = lecturer.getCredential();
+
+        if (!passwordEncoder.matches(request.getOldPassword(), credential.getPassword())) {
+            throw new AccessDeniedException("Password does not match");
+        }
+        credential.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        lecturerRepository.save(lecturer);
+
     }
 
 }
