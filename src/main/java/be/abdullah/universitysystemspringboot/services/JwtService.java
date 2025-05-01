@@ -1,5 +1,6 @@
 package be.abdullah.universitysystemspringboot.services;
 
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,7 +11,8 @@ import java.util.Date;
 @Service
 public class JwtService {
     @Value("${spring.jwt.secret}")
-    private  String secret;
+    private String secret;
+
     public String generateToken(String email) {
 
         final long tokenExpiration = 86400L;
@@ -20,5 +22,18 @@ public class JwtService {
                 .expiration(new Date(System.currentTimeMillis() + 1000 * tokenExpiration))
                 .signWith(Keys.hmacShaKeyFor(secret.getBytes()))
                 .compact();
+    }
+
+    public boolean validateToken(String token) {
+        try {
+            var claims = Jwts.parser()
+                    .verifyWith(Keys.hmacShaKeyFor(secret.getBytes()))
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+            return claims.getExpiration().after(new Date());
+        } catch (JwtException exception) {
+            return false;
+        }
     }
 }

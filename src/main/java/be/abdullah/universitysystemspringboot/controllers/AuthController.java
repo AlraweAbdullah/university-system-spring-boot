@@ -20,7 +20,7 @@ public class AuthController {
     private final JwtService jwtService;
 
     @PostMapping("/login")
-    public ResponseEntity<JwtResponse> logIn(@Valid @RequestBody LoginRequest request){
+    public ResponseEntity<JwtResponse> logIn(@Valid @RequestBody LoginRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
@@ -31,8 +31,15 @@ public class AuthController {
         return ResponseEntity.ok(new JwtResponse(token));
     }
 
+
+    @PostMapping("/validate")
+    public boolean validateToken(@RequestHeader("Authorization") String authHeader) {
+        var token = authHeader.replace("Bearer ", "");
+        return jwtService.validateToken(token);
+    }
+
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<Void> handleBadCredentials(BadCredentialsException e){
+    public ResponseEntity<Void> handleBadCredentials(BadCredentialsException e) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 }
