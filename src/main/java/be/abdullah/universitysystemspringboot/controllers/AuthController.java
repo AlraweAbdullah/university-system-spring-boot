@@ -1,10 +1,11 @@
 package be.abdullah.universitysystemspringboot.controllers;
 
+import be.abdullah.universitysystemspringboot.dtos.JwtResponse;
 import be.abdullah.universitysystemspringboot.dtos.LoginRequest;
+import be.abdullah.universitysystemspringboot.services.JwtService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -16,14 +17,18 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/auth")
 public class AuthController {
     private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
+
     @PostMapping("/login")
-    public void logIn(@Valid @RequestBody LoginRequest request){
+    public ResponseEntity<JwtResponse> logIn(@Valid @RequestBody LoginRequest request){
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
                         request.getPassword()
                 )
         );
+        var token = jwtService.generateToken(request.getEmail());
+        return ResponseEntity.ok(new JwtResponse(token));
     }
 
     @ExceptionHandler(BadCredentialsException.class)
