@@ -2,6 +2,9 @@ package be.abdullah.universitysystemspringboot.controllers;
 
 import be.abdullah.universitysystemspringboot.dtos.JwtResponse;
 import be.abdullah.universitysystemspringboot.dtos.LoginRequest;
+import be.abdullah.universitysystemspringboot.dtos.ProfileDto;
+import be.abdullah.universitysystemspringboot.mapper.ProfileMapper;
+import be.abdullah.universitysystemspringboot.repositories.ProfileRepository;
 import be.abdullah.universitysystemspringboot.services.JwtService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -10,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @AllArgsConstructor
@@ -18,7 +22,8 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
-
+    private final ProfileRepository profileRepository;
+    private final ProfileMapper profileMapper;
     @PostMapping("/login")
     public ResponseEntity<JwtResponse> logIn(@Valid @RequestBody LoginRequest request) {
         authenticationManager.authenticate(
@@ -36,6 +41,19 @@ public class AuthController {
     public boolean validateToken(@RequestHeader("Authorization") String authHeader) {
         var token = authHeader.replace("Bearer ", "");
         return jwtService.validateToken(token);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<ProfileDto> getCurrentUser() {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        var email = authentication.getPrincipal().toString();
+
+        var profile = profileRepository.findByEmail(email).orElse(null);
+        if(profile == null){
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(profileMapper.toDto(profile));
     }
 
     @ExceptionHandler(BadCredentialsException.class)
