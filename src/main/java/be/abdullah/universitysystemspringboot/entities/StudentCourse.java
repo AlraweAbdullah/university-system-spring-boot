@@ -29,7 +29,7 @@ public class StudentCourse {
     private Course course;
 
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
 }

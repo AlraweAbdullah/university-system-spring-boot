@@ -90,7 +90,6 @@ public class StudentService {
         studentCourse.setId(new StudentCourseId(student.getId(), course.getId()));
         studentCourse.setStudent(student);
         studentCourse.setCourse(course);
-        studentCourse.setCreatedAt(LocalDateTime.now());
 
 
         student.getStudentCourses().add(studentCourse);

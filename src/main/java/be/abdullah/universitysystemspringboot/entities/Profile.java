@@ -31,8 +31,5 @@ public class Profile {
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
     private Role role;
-
-    @Column(name = "created_at")
-    private LocalDateTime createdAt = LocalDateTime.now();
 }
 

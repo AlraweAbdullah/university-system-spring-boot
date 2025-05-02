@@ -5,8 +5,7 @@ CREATE TABLE profiles
     lastname   VARCHAR(255)                       NOT NULL,
     email      VARCHAR(255)                       NOT NULL UNIQUE,
     password   VARCHAR(255)                       NOT NULL,
-    role       ENUM ('STUDENT', 'LECTURER', 'ADMIN')       NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL
+    role       ENUM ('STUDENT', 'LECTURER', 'ADMIN')       NOT NULL
 );
 
 CREATE TABLE students
