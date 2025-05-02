@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
-public abstract class UserRequest {
+public abstract class ProfileRequest {
     @NotBlank(message = "Email can't be empty")
     @Email(message = "Email is not valid")
     private String email;

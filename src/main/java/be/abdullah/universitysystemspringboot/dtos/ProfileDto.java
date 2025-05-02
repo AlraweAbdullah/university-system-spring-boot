@@ -7,6 +7,7 @@ import lombok.Data;
 public class ProfileDto {
     private Integer id;
     private String email;
+    private String name;
+    private String lastname;
     private Role role;
-
 }

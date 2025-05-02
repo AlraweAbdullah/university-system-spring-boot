@@ -5,11 +5,7 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data
-public class StudentDto {
-    private Long id;
-    private String name;
-    private String lastname;
-    private String email;
+public class StudentDto extends ProfileDto{
     private String studentNumber;
     private LocalDate birthdate;
 }

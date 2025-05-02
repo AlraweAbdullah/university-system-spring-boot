@@ -6,7 +6,7 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data
-public abstract class StudentRequest extends UserRequest{
+public abstract class StudentRequest extends ProfileRequest {
     @NotBlank(message = "Student number can't be empty")
     private String studentNumber;
 
