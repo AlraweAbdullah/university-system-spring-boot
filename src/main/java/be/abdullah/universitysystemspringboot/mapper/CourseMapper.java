@@ -10,10 +10,13 @@ import org.mapstruct.MappingTarget;
 @Mapper(componentModel = "spring")
 public interface CourseMapper {
 
-    //Not actually needed
-    @Mapping(target = "lecturer", source = "lecturer")
+    @Mapping(target = "lecturer.email", source = "lecturer.profile.email")
+    @Mapping(target = "lecturer.lastname", source = "lecturer.profile.lastname")
+    @Mapping(target = "lecturer.name", source = "lecturer.profile.name")
     CourseDto toDto(Course course);
+
     Course toEntity(CourseRequest request);
+
     @Mapping(target = "lecturer.id", source = "lecturerId")
     void update(CourseRequest request, @MappingTarget Course course);
 }

@@ -28,10 +28,4 @@ public class Course {
     @ManyToOne
     @JoinColumn(name = "lecturer_id")
     private Lecturer lecturer;
-
-    public void setLecturer(Lecturer lecturer) {
-        this.lecturer = lecturer;
-        //Todo add this cours to lecturer's courses
-    }
-
 }

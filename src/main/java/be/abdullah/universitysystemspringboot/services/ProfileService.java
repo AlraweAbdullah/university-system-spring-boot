@@ -54,7 +54,7 @@ public class ProfileService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        var profile = profileRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("Profile not found"));
+        var profile = profileRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
         return new org.springframework.security.core.userdetails.User(
                 profile.getEmail(),
                 profile.getPassword(),
