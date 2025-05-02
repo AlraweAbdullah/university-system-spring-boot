@@ -1,5 +1,6 @@
 package be.abdullah.universitysystemspringboot.configurations;
 
+import be.abdullah.universitysystemspringboot.entities.Role;
 import be.abdullah.universitysystemspringboot.filters.JwtAuthenticationFilter;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -39,11 +40,20 @@ public class SecurityConfig {
                 .sessionManagement(c -> c.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(c -> c
-                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/refresh").permitAll()
-                        .anyRequest().authenticated())
+                        .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/refresh").permitAll()
+                        .anyRequest().hasRole(Role.ADMIN.name())
+                )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling(c -> c.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)));
+                .exceptionHandling(c ->
+                        {
+                            c.authenticationEntryPoint(
+                                    new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)
+                            );
+                            c.accessDeniedHandler((request, response, accessDeniedException) -> {
+                                response.setStatus(HttpStatus.FORBIDDEN.value());
+                            });
+                        }
+                );
 
         return http.build();
     }

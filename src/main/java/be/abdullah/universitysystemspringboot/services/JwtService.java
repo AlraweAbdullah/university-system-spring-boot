@@ -2,6 +2,7 @@ package be.abdullah.universitysystemspringboot.services;
 
 import be.abdullah.universitysystemspringboot.configurations.JwtConfig;
 import be.abdullah.universitysystemspringboot.entities.Profile;
+import be.abdullah.universitysystemspringboot.entities.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -50,6 +51,10 @@ public class JwtService {
 
     public Long getProfileIdFromToken(String token) {
         return Long.valueOf(getClaims(token).getSubject());
+    }
+
+    public Role getRoleFromToken(String token) {
+        return Role.valueOf(getClaims(token).get("role", String.class));
     }
 
     private Claims getClaims(String token) {

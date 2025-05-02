@@ -5,7 +5,7 @@ CREATE TABLE profiles
     lastname   VARCHAR(255)                       NOT NULL,
     email      VARCHAR(255)                       NOT NULL UNIQUE,
     password   VARCHAR(255)                       NOT NULL,
-    role       ENUM ('STUDENT', 'LECTURER')       NOT NULL,
+    role       ENUM ('STUDENT', 'LECTURER', 'ADMIN')       NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
@@ -23,6 +23,13 @@ CREATE TABLE lecturers
     id         BIGINT AUTO_INCREMENT PRIMARY KEY NOT NULL,
     profile_id    BIGINT                            NOT NULL,
     CONSTRAINT fk_lecturer_profile FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE
+);
+
+CREATE TABLE admins
+(
+    id         BIGINT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    profile_id    BIGINT                            NOT NULL,
+    CONSTRAINT fk_admin_profile FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE
 );
 
 CREATE TABLE courses
