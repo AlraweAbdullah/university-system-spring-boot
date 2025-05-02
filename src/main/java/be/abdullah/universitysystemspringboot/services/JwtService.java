@@ -31,6 +31,7 @@ public class JwtService {
                 .subject(profile.getId().toString())
                 .claims(Map.of("email", profile.getEmail()))
                 .claims(Map.of("name", profile.getName()))
+                .claims(Map.of("role", profile.getRole()))
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + 1000L * tokenExpiration))
                 .signWith(jwtConfig.getSecretKey())
