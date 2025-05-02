@@ -7,8 +7,10 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface StudentCourseMapper {
-
-    @Mapping(target = "registeredAt", source = "createdAt")
+    @Mapping(source = "createdAt", target = "registeredAt")
+    @Mapping(source = "course.lecturer.profile.name", target = "course.lecturer.name")
+    @Mapping(source = "course.lecturer.profile.lastname", target = "course.lecturer.lastname")
+    @Mapping(source = "course.lecturer.profile.email", target = "course.lecturer.email")
     StudentCourseDto toDto(StudentCourse studentCourse);
 
 }

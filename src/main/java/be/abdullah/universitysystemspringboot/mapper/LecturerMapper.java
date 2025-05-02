@@ -19,7 +19,6 @@ public interface LecturerMapper {
     @Mapping(source = "profile.email", target = "email")
     @Mapping(source = "profile.lastname", target = "lastname")
     @Mapping(source = "profile.name", target = "name")
-    @Mapping(source = "profile.role", target = "role")
     LecturerDto toDto(Lecturer lecturer);
 
     @Mapping(source = "email", target = "profile.email")
