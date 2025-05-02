@@ -1,6 +1,5 @@
 package be.abdullah.universitysystemspringboot.dtos;
 
-import jakarta.persistence.Column;
 import lombok.Data;
 
 import java.time.LocalDate;

@@ -1,18 +1,18 @@
 package be.abdullah.universitysystemspringboot.services;
 
 import be.abdullah.universitysystemspringboot.dtos.*;
+import be.abdullah.universitysystemspringboot.entities.Role;
 import be.abdullah.universitysystemspringboot.entities.StudentCourse;
 import be.abdullah.universitysystemspringboot.entities.StudentCourseId;
 import be.abdullah.universitysystemspringboot.exceptions.*;
 import be.abdullah.universitysystemspringboot.mapper.StudentCourseMapper;
 import be.abdullah.universitysystemspringboot.mapper.StudentMapper;
 import be.abdullah.universitysystemspringboot.repositories.CourseRepository;
-import be.abdullah.universitysystemspringboot.repositories.CredentialRepository;
+import be.abdullah.universitysystemspringboot.repositories.ProfileRepository;
 import be.abdullah.universitysystemspringboot.repositories.StudentRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,9 +28,8 @@ public class StudentService {
     private final StudentMapper studentMapper;
     private final StudentCourseMapper studentCourseMapper;
     private final CourseRepository courseRepository;
-    private final CredentialRepository credentialRepository;
     private final PasswordEncoder passwordEncoder;
-    private final CredintialService credintialService;
+    private final ProfileRepository profileRepository;
 
 
     public List<StudentDto> getAllStudents() {
@@ -43,11 +42,12 @@ public class StudentService {
     }
 
     public StudentDto registerStudent(RegisterStudentRequest request) {
-        if (credentialRepository.existsByEmail(request.getEmail())) {
+        if (profileRepository.existsByEmail(request.getEmail())) {
             throw new DuplicateStudentException();
         }
         var student = studentMapper.toEntity(request);
-        student.getCredential().setPassword(passwordEncoder.encode(request.getPassword()));
+        student.getProfile().setPassword(passwordEncoder.encode(request.getPassword()));
+        student.getProfile().setRole(Role.STUDENT);
         return studentMapper.toDto(studentRepository.save(student));
     }
 
@@ -55,13 +55,12 @@ public class StudentService {
         var student = studentRepository.findById(id).orElseThrow(StudentNotFoundException::new);
 
 
-        var  credential = credentialRepository.findByEmail(request.getEmail()).orElse(null);
-            if (credential != null && !credential.getId().equals(student.getCredential().getId())) {
+        var profile = profileRepository.findByEmail(request.getEmail()).orElse(null);
+        if (profile != null && !profile.getId().equals(student.getProfile().getId())) {
                 throw new DuplicateStudentException();
             }
 
         studentMapper.update(request, student);
-        System.out.println(student.getCredential().getEmail());
         studentRepository.save(student);
         return studentMapper.toDto(student);
     }
@@ -69,19 +68,6 @@ public class StudentService {
     public void deleteStudent(Long id) {
         studentRepository.findById(id).orElseThrow(StudentNotFoundException::new);
         studentRepository.deleteById(id);
-    }
-
-    public void changePassword(Long id, ChangePasswordRequest request) {
-        var lecturer = studentRepository.findById(id).orElseThrow(StudentNotFoundException::new);
-
-        var credential = lecturer.getCredential();
-
-        if (!passwordEncoder.matches(request.getOldPassword(), credential.getPassword())) {
-            throw new AccessDeniedException("Password does not match");
-        }
-        credential.setPassword(passwordEncoder.encode(request.getNewPassword()));
-        studentRepository.save(lecturer);
-
     }
 
     @Transactional

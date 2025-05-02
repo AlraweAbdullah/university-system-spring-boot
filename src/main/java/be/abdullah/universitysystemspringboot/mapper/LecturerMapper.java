@@ -10,11 +10,19 @@ import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface LecturerMapper {
-    @Mapping(source = "password", target = "credential.password")
-    @Mapping(source = "email", target = "credential.email")
+    @Mapping(source = "password", target = "profile.password")
+    @Mapping(source = "email", target = "profile.email")
+    @Mapping(source = "lastname", target = "profile.lastname")
+    @Mapping(source = "name", target = "profile.name")
     Lecturer toEntity(RegisterLecturerRequest request);
 
-    @Mapping(source = "credential.email", target = "email")
+    @Mapping(source = "profile.email", target = "email")
+    @Mapping(source = "profile.lastname", target = "lastname")
+    @Mapping(source = "profile.name", target = "name")
     LecturerDto toDto(Lecturer lecturer);
+
+    @Mapping(source = "email", target = "profile.email")
+    @Mapping(source = "lastname", target = "profile.lastname")
+    @Mapping(source = "name", target = "profile.name")
     void update(UpdateLecturerRequest request, @MappingTarget Lecturer lecturer);
 }

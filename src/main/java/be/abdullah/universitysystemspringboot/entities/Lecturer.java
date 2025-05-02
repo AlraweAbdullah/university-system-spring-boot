@@ -14,13 +14,7 @@ public class Lecturer {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "name")
-    private String name;
-
-    @Column(name = "lastname")
-    private String lastname;
-
     @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.REMOVE, CascadeType.MERGE})
-    @JoinColumn(name = "credential_id")
-    private Credential credential;
+    @JoinColumn(name = "profile_id")
+    private Profile profile;
 }

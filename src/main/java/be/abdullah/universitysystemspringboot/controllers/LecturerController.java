@@ -1,8 +1,14 @@
 package be.abdullah.universitysystemspringboot.controllers;
 
-import be.abdullah.universitysystemspringboot.dtos.*;
-import be.abdullah.universitysystemspringboot.exceptions.*;
+import be.abdullah.universitysystemspringboot.dtos.ChangePasswordRequest;
+import be.abdullah.universitysystemspringboot.dtos.LecturerDto;
+import be.abdullah.universitysystemspringboot.dtos.RegisterLecturerRequest;
+import be.abdullah.universitysystemspringboot.dtos.UpdateLecturerRequest;
+import be.abdullah.universitysystemspringboot.exceptions.DuplicateLecturerException;
+import be.abdullah.universitysystemspringboot.exceptions.LecturerNotFoundException;
+import be.abdullah.universitysystemspringboot.exceptions.ProfileNotFoundException;
 import be.abdullah.universitysystemspringboot.services.LecturerService;
+import be.abdullah.universitysystemspringboot.services.ProfileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,6 +29,7 @@ import java.util.Map;
 @Tag(name = "Lecturers")
 public class LecturerController {
     private final LecturerService lecturerService;
+    private final ProfileService profileService;
 
     @GetMapping
     @Operation(summary = "Get all registered lecturers")
@@ -69,12 +76,12 @@ public class LecturerController {
     public ResponseEntity<Void> changePassword(
             @Parameter(name = "id", required = true) @PathVariable Long id,
             @Valid @RequestBody ChangePasswordRequest request) {
-        lecturerService.changePassword(id, request);
+        profileService.changePassword(id, request, "lecturer");
         return ResponseEntity.noContent().build();
     }
 
     // Exception handlers section
-    @ExceptionHandler(LecturerNotFoundException.class)
+    @ExceptionHandler({LecturerNotFoundException.class, ProfileNotFoundException.class})
     public ResponseEntity<Map<String, String>> handleLecturerNotFound() {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(Map.of("error", "Lecturer not found"));
@@ -88,7 +95,6 @@ public class LecturerController {
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Void> handleAccessDenied() {
-        System.out.println("ee");
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 }

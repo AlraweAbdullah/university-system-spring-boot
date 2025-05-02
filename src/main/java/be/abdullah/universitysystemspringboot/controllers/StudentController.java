@@ -3,6 +3,7 @@ package be.abdullah.universitysystemspringboot.controllers;
 import be.abdullah.universitysystemspringboot.dtos.*;
 import be.abdullah.universitysystemspringboot.exceptions.*;
 import be.abdullah.universitysystemspringboot.services.StudentService;
+import be.abdullah.universitysystemspringboot.services.ProfileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,6 +24,7 @@ import java.util.Map;
 @Tag(name = "Students")
 public class StudentController {
     private final StudentService studentService;
+    private final ProfileService profileService;
 
     @GetMapping
     @Operation(summary = "Get all registered students")
@@ -60,7 +62,7 @@ public class StudentController {
     @PostMapping("/{id}/change-password")
     @Operation(summary = "Change a registered student's password")
     public ResponseEntity<Void> changePassword(@Parameter(name = "id", required = true) @PathVariable Long id, @Valid @RequestBody ChangePasswordRequest request) {
-        studentService.changePassword(id, request);
+        profileService.changePassword(id, request, "student");
         return ResponseEntity.noContent().build();
     }
 
@@ -94,7 +96,7 @@ public class StudentController {
     }
 
     // Exception handlers section
-    @ExceptionHandler(StudentNotFoundException.class)
+    @ExceptionHandler({StudentNotFoundException.class, ProfileNotFoundException.class})
     public ResponseEntity<Map<String, String>> handleStudentNotFound() {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Student not found"));
     }

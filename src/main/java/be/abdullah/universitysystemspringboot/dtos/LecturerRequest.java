@@ -1,18 +1,8 @@
 package be.abdullah.universitysystemspringboot.dtos;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
-public abstract class LecturerRequest {
-    @NotBlank(message = "Email can't be empty")
-    @Email(message = "Email is not valid")
-    private String email;
+public abstract class LecturerRequest extends UserRequest {
 
-    @NotBlank(message = "Name can't be empty")
-    private String name;
-
-    @NotBlank(message = "Lastname can't be empty")
-    private String lastname;
 }
