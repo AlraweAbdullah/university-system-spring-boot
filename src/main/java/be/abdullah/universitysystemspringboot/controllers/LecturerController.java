@@ -4,6 +4,7 @@ import be.abdullah.universitysystemspringboot.dtos.ChangePasswordRequest;
 import be.abdullah.universitysystemspringboot.dtos.LecturerDto;
 import be.abdullah.universitysystemspringboot.dtos.RegisterLecturerRequest;
 import be.abdullah.universitysystemspringboot.dtos.UpdateLecturerRequest;
+import be.abdullah.universitysystemspringboot.entities.Role;
 import be.abdullah.universitysystemspringboot.exceptions.DuplicateLecturerException;
 import be.abdullah.universitysystemspringboot.exceptions.LecturerNotFoundException;
 import be.abdullah.universitysystemspringboot.exceptions.ProfileNotFoundException;
@@ -76,7 +77,7 @@ public class LecturerController {
     public ResponseEntity<Void> changePassword(
             @Parameter(name = "id", required = true) @PathVariable Long id,
             @Valid @RequestBody ChangePasswordRequest request) {
-        profileService.changePassword(id, request, "lecturer");
+        profileService.changePassword(id, request, Role.LECTURER);
         return ResponseEntity.noContent().build();
     }
 

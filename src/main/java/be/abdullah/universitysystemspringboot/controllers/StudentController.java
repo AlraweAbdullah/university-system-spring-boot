@@ -1,6 +1,7 @@
 package be.abdullah.universitysystemspringboot.controllers;
 
 import be.abdullah.universitysystemspringboot.dtos.*;
+import be.abdullah.universitysystemspringboot.entities.Role;
 import be.abdullah.universitysystemspringboot.exceptions.*;
 import be.abdullah.universitysystemspringboot.services.StudentService;
 import be.abdullah.universitysystemspringboot.services.ProfileService;
@@ -62,7 +63,7 @@ public class StudentController {
     @PostMapping("/{id}/change-password")
     @Operation(summary = "Change a registered student's password")
     public ResponseEntity<Void> changePassword(@Parameter(name = "id", required = true) @PathVariable Long id, @Valid @RequestBody ChangePasswordRequest request) {
-        profileService.changePassword(id, request, "student");
+        profileService.changePassword(id, request, Role.STUDENT);
         return ResponseEntity.noContent().build();
     }
 
