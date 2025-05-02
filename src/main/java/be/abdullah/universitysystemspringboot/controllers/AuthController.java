@@ -32,7 +32,8 @@ public class AuthController {
                         request.getPassword()
                 )
         );
-        var token = jwtService.generateToken(request.getEmail());
+        var profile = profileRepository.findByEmail(request.getEmail()).orElseThrow();
+        var token = jwtService.generateToken(profile);
         return ResponseEntity.ok(new JwtResponse(token));
     }
 
@@ -46,9 +47,9 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<ProfileDto> getCurrentUser() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
-        var email = authentication.getPrincipal().toString();
+        var profileId = (Long) authentication.getPrincipal();
 
-        var profile = profileRepository.findByEmail(email).orElse(null);
+        var profile = profileRepository.findById(profileId).orElse(null);
         if(profile == null){
             return ResponseEntity.notFound().build();
         }
